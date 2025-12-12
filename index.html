@@ -1,185 +1,499 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>OrionTools</title>
 <style>
-    body {
-        margin: 0; padding: 0;
-        background: #0f0f0f; color: white;
-        font-family: Arial;
-        display: flex;
-    }
+  :root{
+    --bg:#0b0e12;
+    --panel:#0f161a;
+    --muted:#95a3b3;
+    --accent:#38bdf8; /* neon */
+    --glass: rgba(255,255,255,0.03);
+    --card-shadow: 0 10px 30px rgba(2,6,12,0.6);
+  }
+  html,body{height:100%;margin:0;background:
+    radial-gradient(1200px 600px at 10% 10%, rgba(56,189,248,0.03), transparent),
+    linear-gradient(180deg,#05060a,#071018 60%); color:#e6eef8;font-family:Inter,Segoe UI,Roboto,Arial;}
+  /* layout */
+  .app{display:flex;min-height:100vh;gap:0}
+  /* LEFT MENU */
+  .left {
+    width:84px;
+    background:linear-gradient(180deg,#07121a,#071822);
+    border-right:1px solid rgba(255,255,255,0.03);
+    display:flex;flex-direction:column;align-items:center;padding:18px 8px;position:relative;
+  }
+  .logo{font-weight:800;color:var(--accent);letter-spacing:1px;margin-bottom:6px;font-size:13px}
+  .dots{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+  .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.06)}
+  .tool-btn{width:100%;display:flex;flex-direction:column;align-items:center;gap:4px;margin:8px 0;cursor:pointer;
+    padding:10px;border-radius:10px;transition:all 260ms cubic-bezier(.2,.9,.2,1);}
+  .tool-btn:hover{background:rgba(56,189,248,0.03);transform:translateX(6px);box-shadow:0 6px 18px rgba(56,189,248,0.06)}
+  .tool-btn.active{background:linear-gradient(90deg, rgba(56,189,248,0.06), rgba(129,140,248,0.03));box-shadow:0 8px 30px rgba(56,189,248,0.06);border-left:4px solid var(--accent)}
+  .tool-ico{font-size:20px;color:#cfeffd}
+  .tool-label{font-size:11px;color:var(--muted);opacity:.9}
 
-    /* Sol Menü */
-    #menu {
-        width: 70px;
-        background: #1a1a1a;
-        height: 100vh;
-        padding-top: 20px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 25px;
-        border-right: 2px solid #333;
-    }
+  /* header & content */
+  .main {flex:1; padding:28px; display:flex;flex-direction:column;gap:18px}
+  .topbar{display:flex;justify-content:space-between;align-items:center}
+  .title{font-size:20px;font-weight:700;display:flex;gap:12px;align-items:center}
+  .subtitle{color:var(--muted);font-size:13px}
+  .content {display:flex;gap:24px;align-items:flex-start;flex:1}
+  .leftPane{flex:1;max-width:820px}
+  .rightPane{width:320px;min-width:220px}
 
-    .dot {
-        width: 12px;
-        height: 12px;
-        background: #777;
-        border-radius: 50%;
-    }
+  /* card */
+  .card{background:linear-gradient(180deg,var(--panel),rgba(255,255,255,0.01));border-radius:14px;padding:18px;border:1px solid rgba(255,255,255,0.03);box-shadow:var(--card-shadow);transition:all .4s ease}
+  .card h2{margin:0 0 8px;font-size:18px;color:var(--accent)}
+  .muted{color:var(--muted);font-size:13px}
 
-    .menu-btn {
-        width: 100%;
-        padding: 15px 0;
-        text-align: center;
-        cursor: pointer;
-        transition: 0.2s;
-    }
+  /* fade animation for panel content changes */
+  .panel {min-height:260px; animation:fadeIn 420ms ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
-    .menu-btn:hover {
-        background: #333;
-    }
+  /* form controls */
+  input, textarea, select {
+    width:100%;padding:10px;border-radius:10px;border:none;background:rgba(255,255,255,0.02);color:#eaf6ff;margin-top:10px;outline:none;
+  }
+  button {background:var(--accent);border:none;color:#012031;padding:10px 12px;border-radius:10px;cursor:pointer;font-weight:700}
+  small{color:var(--muted)}
 
-    /* İçerik */
-    #content {
-        padding: 40px;
-        width: 100%;
-        animation: fadein 0.4s;
-    }
+  /* grid of panels */
+  .tool-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+  @media (max-width:900px){ .tool-grid{grid-template-columns:1fr} }
 
-    .card {
-        background: #1c1c1c;
-        padding: 25px;
-        border-radius: 12px;
-        max-width: 600px;
-    }
+  /* right pane widgets */
+  .stat{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent)}
+  .stat strong{color:var(--accent)}
 
-    input, textarea, select {
-        width: 100%; padding: 10px;
-        border-radius: 8px; border: none;
-        margin-top: 10px; background: #333; color: white;
-    }
+  /* calculator */
+  .calc-screen{background:#081219;border-radius:10px;padding:14px;color:#dff6ff;font-size:20px;text-align:right}
+  .calc-keys{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+  .key{background:#0e1620;border-radius:10px;padding:14px;text-align:center;cursor:pointer;user-select:none;box-shadow:inset 0 -3px 0 rgba(0,0,0,0.3)}
+  .key.op{background:linear-gradient(180deg,#243746,#1a2b35);color:var(--accent);font-weight:700}
 
-    button {
-        padding: 12px 20px;
-        border: none; border-radius: 8px;
-        background: #444; color: white;
-        margin-top: 10px; cursor: pointer;
-    }
-    button:hover { background: #666; }
+  /* tiny footer */
+  footer{margin-top:20px;color:var(--muted);font-size:12px;text-align:center}
 
-    @keyframes fadein {
-        from { opacity: 0; transform: translateY(10px); }
-        to   { opacity: 1; transform: translateY(0); }
-    }
+  /* mobile adjustments */
+  @media (max-width:720px){
+    .left{position:fixed;left:0;top:0;bottom:0;z-index:40}
+    .main{padding:14px;margin-left:84px}
+    .rightPane{display:none}
+  }
+
+  /* small niceties */
+  .mini-row{display:flex;gap:8px;align-items:center}
+  .sm{font-size:12px;color:var(--muted)}
+  .kbd{background:rgba(255,255,255,0.03);padding:6px 8px;border-radius:8px;font-weight:700}
 </style>
 </head>
 <body>
+<div class="app">
+  <!-- LEFT MENU -->
+  <aside class="left" role="navigation" aria-label="Tool menu">
+    <div class="logo">ORION</div>
+    <div class="dots" title="menu dots">
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>
 
-<!-- Sol Menü -->
-<div id="menu">
-    <div class="dot"></div>
-    <div class="dot"></div>
-    <div class="dot"></div>
+    <div id="btnCalc" class="tool-btn" onclick="activate('calculator')">
+      <div class="tool-ico">🧮</div><div class="tool-label">Hesap Makinesi</div>
+    </div>
 
-    <div class="menu-btn" onclick="openPage('pass')">🔐</div>
-    <div class="menu-btn" onclick="openPage('money')">💱</div>
-    <div class="menu-btn" onclick="openPage('summary')">📚</div>
-</div>
+    <div id="btnTrans" class="tool-btn" onclick="activate('translate')">
+      <div class="tool-ico">🌐</div><div class="tool-label">Çeviri</div>
+    </div>
 
-<!-- İçerik Alanı -->
-<div id="content">
-    <h1>OrionTools</h1>
-    <p>Soldaki menüden bir araç seç.</p>
+    <div id="btnSumm" class="tool-btn" onclick="activate('summary')">
+      <div class="tool-ico">📚</div><div class="tool-label">Ödev Özetleyici</div>
+    </div>
+
+    <div id="btnCurr" class="tool-btn" onclick="activate('currency')">
+      <div class="tool-ico">💱</div><div class="tool-label">Para Dönüştür</div>
+    </div>
+
+    <div id="btnPass" class="tool-btn" onclick="activate('password')">
+      <div class="tool-ico">🔐</div><div class="tool-label">Şifre Oluşturucu</div>
+    </div>
+
+    <div id="btnNick" class="tool-btn" onclick="activate('nick')">
+      <div class="tool-ico">🎭</div><div class="tool-label">Nick Oluşturucu</div>
+    </div>
+
+    <div id="btnClock" class="tool-btn" onclick="activate('clock')">
+      <div class="tool-ico">⏰</div><div class="tool-label">Saat & Kronometre</div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div class="title">OrionTools <small class="sm">— Hızlı, Koyu, Mobil Uyumlu</small></div>
+      <div class="mini-row">
+        <div class="sm">Tema: <span class="kbd">Dark</span></div>
+      </div>
+    </div>
+
+    <div class="content">
+      <section class="leftPane">
+        <div id="activePanel" class="card panel">
+          <!-- dynamic content here -->
+          <h2>Hoşgeldin — OrionTools</h2>
+          <p class="muted">Soldaki ikonlardan birini seç. Mobilde menü sabit görünecek.</p>
+          <div style="margin-top:14px" class="muted">Araçların hepsi tek dosyada, GitHub Pages uyumlu. Çeviri/döviz için internet varsa gerçek zamanlı çalışır, yoksa fallback kullanır.</div>
+        </div>
+
+        <!-- extra: tools quick grid -->
+        <div class="tool-grid" style="margin-top:16px">
+          <div class="card">
+            <h3 style="margin:0 0 8px">🔥 Hızlı Başla</h3>
+            <small class="muted">Hemen bir araç seç veya aşağıdan deneyin.</small>
+            <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+              <button onclick="activate('calculator')">Hesap</button>
+              <button onclick="activate('password')">Şifre</button>
+              <button onclick="activate('currency')">Döviz</button>
+              <button onclick="activate('translate')">Çeviri</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 style="margin:0 0 8px">ℹ️ Bilgi</h3>
+            <p class="muted" style="margin:0">OrionTools, öğrencilerin ve günlük kullanıcıların işini hızlandırmak için tasarlandı. Mobil uyumlu, hızlı ve reklama uygun.</p>
+          </div>
+        </div>
+      </section>
+
+      <aside class="rightPane">
+        <div class="card" style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div><small class="sm">Kullanıcı</small><div><strong>Misafir</strong></div></div>
+            <div style="text-align:right"><small class="sm">Puan</small><div><strong id="userPoints">0</strong></div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="stat"><div class="sm">Günlük ziyaret hedefi</div><strong>1.000</strong></div>
+          <div style="height:10px"></div>
+          <div class="stat"><div class="sm">Araç sayısı</div><strong>8</strong></div>
+          <div style="height:10px"></div>
+          <div class="stat"><div class="sm">Mobil hazır</div><strong>Evet</strong></div>
+        </div>
+
+      </aside>
+    </div>
+
+    <footer>
+      <small class="muted">© 2025 OrionTools • Basit araçlar, hızlı sonuçlar</small>
+    </footer>
+  </main>
 </div>
 
 <script>
-// ---------------------- SAYFA YÜKLEYİCİ ----------------------
-function openPage(page) {
-    if (page === "pass") {
-        document.getElementById("content").innerHTML = `
-        <h2>🔐 Rastgele Şifre Oluşturucu</h2>
-        <div class='card'>
-            <input type='number' id='length' placeholder='Uzunluk'>
-            <button onclick='generate()'>Oluştur</button>
-            <input id='output' readonly placeholder='Şifre burada'>
-        </div>`;
-    }
+/* ---------- UTILS ---------- */
+function q(s){return document.querySelector(s)}
+function htmlEncode(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
-    if (page === "money") {
-        document.getElementById("content").innerHTML = `
-        <h2>💱 Para Birimi Dönüştürücü</h2>
-        <div class='card'>
-            <input id='amount' type='number' placeholder='Tutar'>
-            <select id='from'>
-                <option value='TRY'>TRY</option>
-                <option value='USD'>USD</option>
-                <option value='EUR'>EUR</option>
-            </select>
-            <select id='to'>
-                <option value='USD'>USD</option>
-                <option value='TRY'>TRY</option>
-                <option value='EUR'>EUR</option>
-            </select>
-            <button onclick='convertMoney()'>Dönüştür</button>
-            <input id='converted' readonly placeholder='Sonuç'>
-        </div>`;
-    }
-
-    if (page === "summary") {
-        document.getElementById("content").innerHTML = `
-        <h2>📚 Ödev Özetleyici</h2>
-        <div class='card'>
-            <textarea id='text' rows='5' placeholder='Metni yapıştır'></textarea>
-            <button onclick='summarize()'>Özetle</button>
-            <textarea id='summary' rows='4' placeholder='Özet burada'></textarea>
-        </div>`;
-    }
+/* ---------- MENU ACTIVATE ---------- */
+const tools = ['calculator','translate','summary','currency','password','nick','clock'];
+function clearActiveBtns(){
+  tools.forEach(t=>{
+    let el = q('#btn'+capitalize(t));
+    if(el) el.classList.remove('active');
+  })
+}
+function capitalize(s){return s.charAt(0).toUpperCase()+s.slice(1)}
+function activate(tool){
+  clearActiveBtns();
+  const btn = q('#btn'+capitalize(tool));
+  if(btn) btn.classList.add('active');
+  renderPanel(tool);
 }
 
-// ---------------------- ŞİFRE ----------------------
-function generate() {
-    let length = document.getElementById("length").value;
-    let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*";
-    let pass = "";
-    for (let i=0; i<length; i++) pass += chars[Math.floor(Math.random()*chars.length)];
-    document.getElementById("output").value = pass;
+/* ---------- INITIAL ---------- */
+activate('calculator');
+
+/* ---------- RENDER PANELS ---------- */
+function renderPanel(name){
+  const area = q('#activePanel');
+  // fade out then swap (smooth transition)
+  area.style.opacity = 0;
+  setTimeout(()=> {
+    area.innerHTML = panelHtml(name);
+    area.style.opacity = 1;
+    // after injecting, attach any required handlers
+    attachHandlers(name);
+  }, 220);
 }
 
-// ---------------------- PARA BİRİMİ ----------------------
-const rates = {
-    "TRY": { USD: 0.032, EUR: 0.029 },
-    "USD": { TRY: 31.2, EUR: 0.91 },
-    "EUR": { TRY: 34.5, USD: 1.09 }
-};
-
-function convertMoney() {
-    let amount = Number(document.getElementById("amount").value);
-    let from = document.getElementById("from").value;
-    let to = document.getElementById("to").value;
-
-    if (from === to) return document.getElementById("converted").value = amount;
-
-    let result = amount * rates[from][to];
-    document.getElementById("converted").value = result.toFixed(2);
+function panelHtml(name){
+  switch(name){
+    case 'calculator': return calcHtml();
+    case 'translate': return translateHtml();
+    case 'summary': return summaryHtml();
+    case 'currency': return currencyHtml();
+    case 'password': return passwordHtml();
+    case 'nick': return nickHtml();
+    case 'clock': return clockHtml();
+    default: return `<h2>Hoşgeldin</h2><p class="muted">Araç seç.</p>`;
+  }
 }
 
-// ---------------------- ÖZETLEYİCİ ----------------------
-function summarize() {
-    let text = document.getElementById("text").value;
-    if (text.length < 20)
-        return document.getElementById("summary").value = "Metin çok kısa.";
-
-    let sentences = text.split(".");
-    let longest = sentences.sort((a,b) => b.length - a.length)[0];
-
-    document.getElementById("summary").value =
-        "Kısaca özet: " + longest.trim();
+/* ---------- PANEL TEMPLATES ---------- */
+function calcHtml(){
+  return `
+    <h2>🧮 Hesap Makinesi</h2>
+    <div class="card">
+      <div class="calc-screen" id="calcScreen">0</div>
+      <div class="calc-keys">
+        ${['7','8','9','/','4','5','6','*','1','2','3','-','0','.','=','+','C','(',')','%','^'].map(k=>`<div class="key ${isOp(k)?'op':''}" onclick="onCalc('${k}')">${k}</div>`).join('')}
+      </div>
+      <small class="muted">Not: ^ = üslü, % = mod</small>
+    </div>`;
 }
+function isOp(k){return ['/','*','-','+','=','C','%','^'].includes(k)}
+
+/* translate */
+function translateHtml(){
+  return `
+  <h2>🌐 Çeviri</h2>
+  <div class="card">
+    <select id="translateFrom"><option value="auto">Otomatik</option><option value="en">English</option><option value="tr">Türkçe</option><option value="es">Español</option></select>
+    <select id="translateTo" style="margin-top:8px"><option value="tr">Türkçe</option><option value="en">English</option><option value="es">Español</option></select>
+    <textarea id="translateText" rows="5" placeholder="Çevirilecek metin..."></textarea>
+    <button onclick="doTranslate()">Çevir (online)</button>
+    <textarea id="translateResult" rows="4" placeholder="Çeviri sonucu"></textarea>
+    <small class="muted">Not: Online API çalışmazsa basit lokal fallback gösterir.</small>
+  </div>`;
+}
+
+/* summary */
+function summaryHtml(){
+  return `
+  <h2>📚 Ödev Özetleyici</h2>
+  <div class="card">
+    <textarea id="summaryText" rows="6" placeholder="Uzun metni buraya yapıştır..."></textarea>
+    <button onclick="doSummary()">Özetle</button>
+    <textarea id="summaryResult" rows="4" placeholder="Özet burada..."></textarea>
+    <small class="muted">Basit özet: en uzun cümleyi alır ve kısaltır. Offline çalışır.</small>
+  </div>`;
+}
+
+/* currency */
+function currencyHtml(){
+  return `
+  <h2>💱 Para Birimi Dönüştürücü</h2>
+  <div class="card">
+    <input id="curAmount" type="number" placeholder="Tutar" />
+    <select id="curFrom" style="margin-top:8px"><option>TRY</option><option>USD</option><option>EUR</option></select>
+    <select id="curTo" style="margin-top:8px"><option>USD</option><option>TRY</option><option>EUR</option></select>
+    <button onclick="doConvert()">Dönüştür (online)</button>
+    <input id="curResult" readonly placeholder="Sonuç" />
+    <small class="muted">Gerçek zamanlı API ile çalışır; eğer offline ise gömülü oran kullanılır.</small>
+  </div>`;
+}
+
+/* password */
+function passwordHtml(){
+  return `
+  <h2>🔐 Şifre Oluşturucu</h2>
+  <div class="card">
+    <input id="pwLen" type="number" placeholder="Uzunluk (örn: 12)" value="12" />
+    <label style="display:block;margin-top:8px"><input id="pwSymbols" type="checkbox" checked /> Özel karakterler</label>
+    <label style="display:block"><input id="pwNumbers" type="checkbox" checked /> Sayılar</label>
+    <button onclick="genPassword()">Şifre Oluştur</button>
+    <input id="pwOutput" readonly placeholder="Şifre" />
+    <small class="muted">Güçlü şifre için 12+ tavsiye edilir.</small>
+  </div>`;
+}
+
+/* nick */
+function nickHtml(){
+  return `
+  <h2>🎭 Nick Oluşturucu</h2>
+  <div class="card">
+    <select id="nickStyle">
+      <option value="cool">Cool</option>
+      <option value="fun">Komik</option>
+      <option value="gamer">Gamer</option>
+    </select>
+    <input id="nickSeed" placeholder="Kelime ya da tema (örn: ghost)" />
+    <button onclick="genNick()">Nick Oluştur</button>
+    <input id="nickOut" readonly placeholder="Nick burada" />
+    <small class="muted">İstersen sayı ekler, istersen karışık harf kombinasyonu alır.</small>
+  </div>`;
+}
+
+/* clock & stopwatch */
+function clockHtml(){
+  return `
+  <h2>⏰ Saat & Kronometre</h2>
+  <div class="card" style="display:flex;flex-direction:column;gap:12px;align-items:center">
+    <div style="font-size:34px;font-weight:700" id="liveClock">--:--:--</div>
+    <div class="muted">Tarih: <span id="liveDate"></span></div>
+    <div style="height:12px"></div>
+    <div style="width:100%;display:flex;gap:8px;flex-direction:column;align-items:center">
+      <div style="font-size:28px" id="stopwatch">00:00:00.0</div>
+      <div style="display:flex;gap:8px">
+        <button onclick="swStart()">Start</button>
+        <button onclick="swStop()">Stop</button>
+        <button onclick="swReset()">Reset</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- ATTACH HANDLERS AFTER RENDER ---------- */
+function attachHandlers(name){
+  if(name==='calculator') { window.calcExpr = ''; }
+  if(name==='clock'){ updateClock(); startClockInterval(); }
+}
+
+/* ---------- CALCULATOR LOGIC ---------- */
+let calcExpr = '';
+function onCalc(key){
+  if(key==='C'){ calcExpr=''; q('#calcScreen').textContent='0'; return; }
+  if(key==='='){ try{ // support ^ and %
+      let expr = calcExpr.replaceAll('^','**').replaceAll('%','/100');
+      // safe eval via Function
+      let res = Function('"use strict";return ('+expr+')')();
+      q('#calcScreen').textContent = res;
+      calcExpr = String(res);
+    } catch(e){ q('#calcScreen').textContent = 'HATA'; calcExpr=''; }
+    return;
+  }
+  calcExpr += key;
+  q('#calcScreen').textContent = calcExpr;
+}
+
+/* ---------- TRANSLATE (online with fallback) ---------- */
+async function doTranslate(){
+  const text = q('#translateText').value.trim();
+  if(!text){ alert('Metin gir'); return; }
+  const from = q('#translateFrom').value;
+  const to = q('#translateTo').value;
+  q('#translateResult').value = 'Çeviriyor...';
+  // try libretranslate public
+  try {
+    const res = await fetch('https://libretranslate.de/translate', {
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({q:text,source: from==='auto' ? 'auto' : from, target:to, format:'text'})
+    });
+    if(!res.ok) throw new Error('api');
+    const j = await res.json();
+    q('#translateResult').value = j.translatedText || '---';
+    return;
+  } catch(e){
+    // fallback: tiny local dictionary for demo
+    const map = {'hello':'merhaba','world':'dünya','good':'iyi','bad':'kötü'};
+    let out = text.split(' ').map(w => map[w.toLowerCase()] || w).join(' ');
+    q('#translateResult').value = out + ' (offline-fallback)';
+  }
+}
+
+/* ---------- SUMMARY (simple) ---------- */
+function doSummary(){
+  const t = q('#summaryText').value.trim();
+  if(!t || t.length<20){ alert('Daha uzun metin gir'); return; }
+  // naive: choose most informative sentences by length and keywords
+  const sents = t.split(/[.?!]\s+/).map(s=>s.trim()).filter(Boolean);
+  // score by length + presence of nouns (approx: words >4 chars)
+  const scored = sents.map(s=>{
+    const words = s.split(/\s+/);
+    const long = words.filter(w=>w.length>4).length;
+    return {s,score: s.length + long*10};
+  }).sort((a,b)=>b.score-a.score);
+  const top = scored.slice(0, Math.max(1, Math.ceil(scored.length/3))).map(x=>x.s);
+  q('#summaryResult').value = 'Kısaca: ' + top.join('. ') + (top.length ? '.' : '');
+}
+
+/* ---------- CURRENCY (online + fallback rates) ---------- */
+const fallbackRates = { TRY:{USD:0.032,EUR:0.029}, USD:{TRY:31.2,EUR:0.91}, EUR:{TRY:34.5,USD:1.09} };
+async function doConvert(){
+  const amount = Number(q('#curAmount').value || 0);
+  const from = q('#curFrom').value; const to = q('#curTo').value;
+  if(!amount){ alert('Tutar gir'); return; }
+  q('#curResult').value = 'Hesaplanıyor...';
+  try {
+    const r = await fetch(`https://api.exchangerate.host/latest?base=${from}&symbols=${to}`);
+    if(!r.ok) throw new Error('api');
+    const j = await r.json();
+    const rate = j.rates[to];
+    const result = amount * rate;
+    q('#curResult').value = result.toFixed(2) + ' ' + to;
+    return;
+  } catch(e){
+    // fallback
+    const rate = fallbackRates[from] && fallbackRates[from][to];
+    if(!rate){ q('#curResult').value = 'Hata'; return; }
+    q('#curResult').value = (amount * rate).toFixed(2) + ' ' + to + ' (offline)';
+  }
+}
+
+/* ---------- PASSWORD ---------- */
+function genPassword(){
+  const len = Number(q('#pwLen').value) || 12;
+  const withSym = q('#pwSymbols').checked;
+  const withNum = q('#pwNumbers').checked;
+  let chars = "abcdefghijklmnopqrstuvwxyz";
+  if(withNum) chars += "0123456789";
+  if(withSym) chars += "!@#$%&*()_+-=[]{}<>?";
+  let out = '';
+  for(let i=0;i<len;i++) out += chars[Math.floor(Math.random()*chars.length)];
+  q('#pwOutput').value = out;
+}
+
+/* ---------- NICK ---------- */
+const adj = ['Shadow','Crazy','Silent','Blue','Swift','Iron','Neon','Ghost','Turbo','Lucky'];
+const nouns = ['Wolf','Blade','Gamer','Pixel','Ninja','Rider','Hunter','Drift','Storm','Echo'];
+function genNick(){
+  const style = q('#nickStyle').value;
+  const seed = (q('#nickSeed').value||'').replace(/\s+/g,'');
+  let nick='';
+  if(style==='cool') nick = (adj[Math.floor(Math.random()*adj.length)] + nouns[Math.floor(Math.random()*nouns.length)]);
+  if(style==='fun') nick = (['Pancake','Coconut','Biscuit','Fuzzy'][Math.floor(Math.random()*4)] + Math.floor(Math.random()*999));
+  if(style==='gamer') nick = (seed?seed:adj[Math.floor(Math.random()*adj.length)]) + (Math.floor(Math.random()*900)+100);
+  q('#nickOut').value = nick;
+}
+
+/* ---------- CLOCK & STOPWATCH ---------- */
+let clockInterval = null;
+function startClockInterval(){ if(clockInterval) return; clockInterval = setInterval(updateClock, 250); }
+function updateClock(){
+  const d = new Date();
+  q('#liveClock')?.textContent = d.toLocaleTimeString();
+  q('#liveDate')?.textContent = d.toLocaleDateString();
+}
+let swTimer=null, swStartTime=0, swElapsed=0;
+function swStart(){ if(swTimer) return; swStartTime = Date.now() - swElapsed; swTimer = setInterval(()=>{ swElapsed = Date.now() - swStartTime; q('#stopwatch').textContent = formatSw(swElapsed); }, 80); }
+function swStop(){ if(!swTimer) return; clearInterval(swTimer); swTimer=null; }
+function swReset(){ swStop(); swElapsed = 0; q('#stopwatch').textContent = formatSw(0); }
+function formatSw(ms){
+  const s = Math.floor(ms/1000); const msT = Math.floor((ms%1000)/100);
+  const hh = String(Math.floor(s/3600)).padStart(2,'0'); const mm = String(Math.floor((s%3600)/60)).padStart(2,'0'); const ss = String(s%60).padStart(2,'0');
+  return `${hh}:${mm}:${ss}.${msT}`;
+}
+
+/* ---------- AFTER RENDER HOOKS (some controls) ---------- */
+function attachHandlers(name){
+  if(name==='calculator'){ /* nothing extra */ }
+  if(name==='translate'){ /* nothing extra */ }
+  if(name==='summary'){ /* nothing extra */ }
+  if(name==='currency'){ /* nothing */ }
+  if(name==='password'){ /* nothing */ }
+  if(name==='nick'){ /* nothing */ }
+  if(name==='clock'){ updateClock(); startClockInterval(); }
+}
+
+/* ensure page responsive on load */
+window.addEventListener('load', ()=>{ /* already active */ });
+
+/* hotkeys for quick testing (1-8) */
+window.addEventListener('keydown', (e)=>{
+  if(e.key>='1' && e.key<='8'){ const map = ['calculator','translate','summary','currency','password','nick','clock']; activate(map[Number(e.key)-1]); }
+});
 </script>
-
 </body>
 </html>
