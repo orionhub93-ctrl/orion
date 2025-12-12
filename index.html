@@ -4,104 +4,180 @@
 <meta charset="UTF-8">
 <title>OrionTools</title>
 <style>
-    body { font-family: Arial; background: #111; color: #fff; margin: 0; padding: 20px; }
-    h1 { text-align: center; }
-    .card { background: #222; padding: 20px; margin: 20px auto; border-radius: 12px; max-width: 500px; }
-    button { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+    body {
+        margin: 0; padding: 0;
+        background: #0f0f0f; color: white;
+        font-family: Arial;
+        display: flex;
+    }
+
+    /* Sol Menü */
+    #menu {
+        width: 70px;
+        background: #1a1a1a;
+        height: 100vh;
+        padding-top: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 25px;
+        border-right: 2px solid #333;
+    }
+
+    .dot {
+        width: 12px;
+        height: 12px;
+        background: #777;
+        border-radius: 50%;
+    }
+
+    .menu-btn {
+        width: 100%;
+        padding: 15px 0;
+        text-align: center;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .menu-btn:hover {
+        background: #333;
+    }
+
+    /* İçerik */
+    #content {
+        padding: 40px;
+        width: 100%;
+        animation: fadein 0.4s;
+    }
+
+    .card {
+        background: #1c1c1c;
+        padding: 25px;
+        border-radius: 12px;
+        max-width: 600px;
+    }
+
     input, textarea, select {
-        width: 100%; padding: 10px; border-radius: 8px; border: none; margin-top: 10px;
+        width: 100%; padding: 10px;
+        border-radius: 8px; border: none;
+        margin-top: 10px; background: #333; color: white;
+    }
+
+    button {
+        padding: 12px 20px;
+        border: none; border-radius: 8px;
+        background: #444; color: white;
+        margin-top: 10px; cursor: pointer;
+    }
+    button:hover { background: #666; }
+
+    @keyframes fadein {
+        from { opacity: 0; transform: translateY(10px); }
+        to   { opacity: 1; transform: translateY(0); }
     }
 </style>
 </head>
 <body>
 
-<h1>OrionTools</h1>
+<!-- Sol Menü -->
+<div id="menu">
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
 
-<!-- 1) ŞİFRE OLUŞTURUCU -->
-<div class="card">
-    <h2>🔐 Rastgele Şifre Oluşturucu</h2>
-    <input type="number" id="length" placeholder="Şifre uzunluğu (örn: 12)">
-    <button onclick="generate()">Oluştur</button>
-    <input id="output" readonly placeholder="Şifre burada gözükecek">
+    <div class="menu-btn" onclick="openPage('pass')">🔐</div>
+    <div class="menu-btn" onclick="openPage('money')">💱</div>
+    <div class="menu-btn" onclick="openPage('summary')">📚</div>
 </div>
 
-<!-- 2) PARA BİRİMİ DÖNÜŞTÜRÜCÜ -->
-<div class="card">
-    <h2>💱 Para Birimi Dönüştürücü</h2>
-    <input id="amount" type="number" placeholder="Tutar">
-    <select id="from">
-        <option value="TRY">TRY</option>
-        <option value="USD">USD</option>
-        <option value="EUR">EUR</option>
-    </select>
-    <select id="to">
-        <option value="USD">USD</option>
-        <option value="TRY">TRY</option>
-        <option value="EUR">EUR</option>
-    </select>
-    <button onclick="convert()">Dönüştür</button>
-    <input id="converted" readonly placeholder="Sonuç burada">
-</div>
-
-<!-- 3) ÖDEV ÖZETLEYİCİ -->
-<div class="card">
-    <h2>📚 Ödev Özetleyici (Mini AI)</h2>
-    <textarea id="text" rows="5" placeholder="Metni buraya yapıştır..."></textarea>
-    <button onclick="summarize()">Özetle</button>
-    <textarea id="summary" rows="4" placeholder="Özet burada gözükecek"></textarea>
+<!-- İçerik Alanı -->
+<div id="content">
+    <h1>OrionTools</h1>
+    <p>Soldaki menüden bir araç seç.</p>
 </div>
 
 <script>
-// --------------- ŞİFRE OLUŞTURUCU ----------------
+// ---------------------- SAYFA YÜKLEYİCİ ----------------------
+function openPage(page) {
+    if (page === "pass") {
+        document.getElementById("content").innerHTML = `
+        <h2>🔐 Rastgele Şifre Oluşturucu</h2>
+        <div class='card'>
+            <input type='number' id='length' placeholder='Uzunluk'>
+            <button onclick='generate()'>Oluştur</button>
+            <input id='output' readonly placeholder='Şifre burada'>
+        </div>`;
+    }
+
+    if (page === "money") {
+        document.getElementById("content").innerHTML = `
+        <h2>💱 Para Birimi Dönüştürücü</h2>
+        <div class='card'>
+            <input id='amount' type='number' placeholder='Tutar'>
+            <select id='from'>
+                <option value='TRY'>TRY</option>
+                <option value='USD'>USD</option>
+                <option value='EUR'>EUR</option>
+            </select>
+            <select id='to'>
+                <option value='USD'>USD</option>
+                <option value='TRY'>TRY</option>
+                <option value='EUR'>EUR</option>
+            </select>
+            <button onclick='convertMoney()'>Dönüştür</button>
+            <input id='converted' readonly placeholder='Sonuç'>
+        </div>`;
+    }
+
+    if (page === "summary") {
+        document.getElementById("content").innerHTML = `
+        <h2>📚 Ödev Özetleyici</h2>
+        <div class='card'>
+            <textarea id='text' rows='5' placeholder='Metni yapıştır'></textarea>
+            <button onclick='summarize()'>Özetle</button>
+            <textarea id='summary' rows='4' placeholder='Özet burada'></textarea>
+        </div>`;
+    }
+}
+
+// ---------------------- ŞİFRE ----------------------
 function generate() {
     let length = document.getElementById("length").value;
     let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*";
     let pass = "";
-    for (let i=0; i<length; i++) {
-        pass += chars[Math.floor(Math.random() * chars.length)];
-    }
+    for (let i=0; i<length; i++) pass += chars[Math.floor(Math.random()*chars.length)];
     document.getElementById("output").value = pass;
 }
 
-// --------------- PARA BİRİMİ DÖNÜŞTÜRÜCÜ ----------------
-// Sabit kur – ücretsiz API kullanmadan basic sistem
+// ---------------------- PARA BİRİMİ ----------------------
 const rates = {
     "TRY": { USD: 0.032, EUR: 0.029 },
     "USD": { TRY: 31.2, EUR: 0.91 },
     "EUR": { TRY: 34.5, USD: 1.09 }
 };
 
-function convert() {
+function convertMoney() {
     let amount = Number(document.getElementById("amount").value);
     let from = document.getElementById("from").value;
     let to = document.getElementById("to").value;
 
-    if (from === to) {
-        document.getElementById("converted").value = amount;
-        return;
-    }
+    if (from === to) return document.getElementById("converted").value = amount;
 
     let result = amount * rates[from][to];
     document.getElementById("converted").value = result.toFixed(2);
 }
 
-// --------------- ÖDEV ÖZETLEYİCİ ----------------
-// Basit JS ile anlamlı özet çıkarıyoruz
+// ---------------------- ÖZETLEYİCİ ----------------------
 function summarize() {
     let text = document.getElementById("text").value;
-
-    if (text.length < 20) {
-        document.getElementById("summary").value = "Metin çok kısa, özetlenemiyor.";
-        return;
-    }
+    if (text.length < 20)
+        return document.getElementById("summary").value = "Metin çok kısa.";
 
     let sentences = text.split(".");
     let longest = sentences.sort((a,b) => b.length - a.length)[0];
 
-    let summary = 
-        "Kısaca özetlemek gerekirse: " + longest.trim();
-
-    document.getElementById("summary").value = summary;
+    document.getElementById("summary").value =
+        "Kısaca özet: " + longest.trim();
 }
 </script>
 
