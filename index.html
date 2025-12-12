@@ -1,171 +1,121 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Araç Galerisi</title>
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        background: #111;
+        color: #fff;
+    }
+
+    .container {
+        max-width: 1100px;
+        margin: auto;
+        padding: 20px;
+    }
+
+    h1 {
+        text-align: center;
+        margin-bottom: 20px;
+        opacity: 0;
+        animation: fadeIn 1.2s ease forwards;
+    }
+
+    .cars {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+    }
+
+    .car {
+        background: #1c1c1c;
+        padding: 15px;
+        border-radius: 12px;
+        text-align: center;
+        cursor: pointer;
+        transition: transform 0.4s ease, opacity 0.4s ease, background 0.4s;
+        opacity: 0;
+        animation: fadeIn 1s ease forwards;
+    }
+
+    .car:hover {
+        transform: scale(1.05);
+        background: #292929;
+    }
+
+    .car img {
+        width: 100%;
+        border-radius: 10px;
+    }
+
+    /* Araç detay kutusu */
+    .details {
+        background: #1c1c1c;
+        margin-top: 20px;
+        padding: 20px;
+        border-radius: 12px;
+        display: none;
+        animation: fadeIn 0.5s ease forwards;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+</head>
+<body>
+
+<div class="container">
+    <h1>Araç Galerisi</h1>
+
+    <div class="cars">
+        <div class="car" onclick="showDetails('M3 GTR')">
+            <img src="https://i.imgur.com/vqUQYqf.jpeg">
+            <h3>M3 GTR</h3>
+        </div>
+
+        <div class="car" onclick="showDetails('Nissan GTR R34')">
+            <img src="https://i.imgur.com/EeCmM5F.jpeg">
+            <h3>Nissan GTR R34</h3>
+        </div>
+
+        <div class="car" onclick="showDetails('350Z')">
+            <img src="https://i.imgur.com/TW0za9P.jpeg">
+            <h3>350Z</h3>
+        </div>
+    </div>
+
+    <div id="detailsBox" class="details"></div>
+</div>
+
 <script>
-/* yardımcı */
-function q(s){return document.querySelector(s);}
-function capitalize(s){return s.charAt(0).toUpperCase() + s.slice(1);}
+function showDetails(carName) {
+    const box = document.getElementById("detailsBox");
 
-/* Menü aktif buton */
-function clearActiveBtns(){
-  document.querySelectorAll(".tool-btn").forEach(b=>b.classList.remove("active"));
+    let text = "";
+
+    if (carName === "M3 GTR") {
+        text = "<h2>M3 GTR</h2><p>Efsane Most Wanted canavarı.</p>";
+    } 
+    else if (carName === "Nissan GTR R34") {
+        text = "<h2>Nissan GTR R34</h2><p>Underground 2’nin ruhu.</p>";
+    }
+    else if (carName === "350Z") {
+        text = "<h2>350Z</h2><p>Modifiye krallarından biri.</p>";
+    }
+
+    box.style.display = "block";
+    box.innerHTML = text;
 }
-
-/* Paneli değiştir */
-function activate(tool){
-  clearActiveBtns();
-  const btn = q("#btn" + capitalize(tool));
-  if(btn) btn.classList.add("active");
-  loadPanel(tool);
-}
-
-/* Panel içerik yükleme */
-function loadPanel(name){
-  const panel = q("#activePanel");
-
-  const panels = {
-    calculator: `
-      <h2>Hesap Makinesi</h2>
-      <div class="calc-screen" id="calcScreen">0</div>
-      <div class="calc-keys">
-        <div class="key">7</div><div class="key">8</div><div class="key">9</div><div class="key op">/</div>
-        <div class="key">4</div><div class="key">5</div><div class="key">6</div><div class="key op">*</div>
-        <div class="key">1</div><div class="key">2</div><div class="key">3</div><div class="key op">-</div>
-        <div class="key">0</div><div class="key">.</div><div class="key op">C</div><div class="key op">+</div>
-        <div class="key op" style="grid-column: span 4">=</div>
-      </div>
-    `,
-
-    translate: `
-      <h2>Çeviri</h2>
-      <textarea id="trIn" placeholder="Metni gir..."></textarea>
-      <button onclick="doTranslate()">Çevir</button>
-      <textarea id="trOut" placeholder="Çeviri burada..." readonly></textarea>
-    `,
-
-    summary: `
-      <h2>Ödev Özetleyici</h2>
-      <textarea id="sumIn" placeholder="Metni buraya yaz..."></textarea>
-      <button onclick="doSummary()">Özetle</button>
-      <textarea id="sumOut" readonly placeholder="Özet burada..."></textarea>
-    `,
-
-    currency: `
-      <h2>Para Birimi Dönüştürücü</h2>
-      <input id="curAmount" type="number" placeholder="Miktar">
-      <select id="curFrom">
-        <option value="USD">USD</option>
-        <option value="TRY">TRY</option>
-        <option value="EUR">EUR</option>
-      </select>
-      →
-      <select id="curTo">
-        <option value="TRY">TRY</option>
-        <option value="USD">USD</option>
-        <option value="EUR">EUR</option>
-      </select>
-      <button onclick="doCurrency()">Dönüştür</button>
-      <input id="curResult" readonly placeholder="Sonuç...">
-    `,
-
-    password: `
-      <h2>Şifre Oluşturucu</h2>
-      <input id="pwLen" type="number" placeholder="Uzunluk (örn 12)">
-      <button onclick="genPassword()">Oluştur</button>
-      <input id="pwOut" readonly placeholder="Şifre burada...">
-    `,
-
-    nick: `
-      <h2>Nick Oluşturucu</h2>
-      <button onclick="genNick()">Rastgele Nick Oluştur</button>
-      <input id="nickOut" readonly placeholder="Nick burada...">
-    `,
-
-    clock: `
-      <h2>Saat ve Kronometre</h2>
-      <div id="liveClock" style="font-size:32px;margin-bottom:14px;"></div>
-
-      <h3>Kronometre</h3>
-      <div id="chrono" style="font-size:24px;margin:10px 0;">00:00:00</div>
-      <button onclick="startChrono()">Başlat</button>
-      <button onclick="stopChrono()">Durdur</button>
-      <button onclick="resetChrono()">Sıfırla</button>
-    `,
-  };
-
-  panel.innerHTML = panels[name] || "<p>Hata: Panel bulunamadı.</p>";
-}
-
-/* ————— Araç fonksiyonları ————— */
-
-/* Çeviri */
-async function doTranslate(){
-  let txt = q("#trIn").value;
-  let out = q("#trOut");
-  out.value = "Çevriliyor...";
-  try{
-    let r = await fetch("https://libretranslate.com/translate",{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body:JSON.stringify({ q:txt, source:"tr", target:"en" })
-    });
-    let j = await r.json();
-    out.value = j.translatedText;
-  }catch(e){
-    out.value = "Çeviremedim (basit çeviri): " + txt;
-  }
-}
-
-/* Özetleyici */
-function doSummary(){
-  let t = q("#sumIn").value.split(" ");
-  q("#sumOut").value = "Kısa Özet: " + t.slice(0,20).join(" ") + "...";
-}
-
-/* Döviz */
-async function doCurrency(){
-  let a = parseFloat(q("#curAmount").value);
-  let f = q("#curFrom").value;
-  let t = q("#curTo").value;
-  let out = q("#curResult");
-  out.value = "Hesaplanıyor...";
-  try{
-    let r = await fetch(`https://api.exchangerate.host/convert?from=${f}&to=${t}&amount=${a}`);
-    let j = await r.json();
-    out.value = j.result;
-  }catch(e){
-    out.value = (a * 0.033).toFixed(2);
-  }
-}
-
-/* Şifre */
-function genPassword(){
-  let len = parseInt(q("#pwLen").value || 12);
-  let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&";
-  let out = "";
-  for(let i=0;i<len;i++) out += chars[Math.floor(Math.random()*chars.length)];
-  q("#pwOut").value = out;
-}
-
-/* Nick */
-function genNick(){
-  let parts = ["Shadow","Neon","Razor","Ghost","Nova","Cyber","Vortex","Night","Zero","Phantom"];
-  q("#nickOut").value = parts[Math.floor(Math.random()*parts.length)] + Math.floor(Math.random()*999);
-}
-
-/* Saat */
-setInterval(()=>{
-  let d = new Date();
-  q("#liveClock").innerText = d.toLocaleTimeString();
-},1000);
-
-/* Kronometre */
-let c=0,chronoInt=null;
-function updateChrono(){
-  let h = String(Math.floor(c/3600)).padStart(2,"0");
-  let m = String(Math.floor((c%3600)/60)).padStart(2,"0");
-  let s = String(c%60).padStart(2,"0");
-  q("#chrono").innerText = `${h}:${m}:${s}`;
-}
-function startChrono(){ if(!chronoInt) chronoInt=setInterval(()=>{c++;updateChrono();},1000); }
-function stopChrono(){ clearInterval(chronoInt); chronoInt=null; }
-function resetChrono(){ c=0;updateChrono(); }
-
 </script>
+
+</body>
+</html>
