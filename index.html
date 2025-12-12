@@ -3,117 +3,211 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Araç Galerisi</title>
+<title>Araç Paneli</title>
 
 <style>
     body {
         margin: 0;
-        padding: 0;
-        font-family: Arial, sans-serif;
-        background: #111;
-        color: #fff;
+        font-family: Arial;
+        background: #0f0f0f;
+        color: white;
+        display: flex;
     }
 
-    .container {
-        max-width: 1100px;
-        margin: auto;
-        padding: 20px;
+    /* Sol Menü */
+    .sidebar {
+        width: 260px;
+        background: #141414;
+        padding: 20px 0;
+        height: 100vh;
+        position: fixed;
+        left: 0;
+        top: 0;
+        box-shadow: 0 0 15px #000;
     }
 
-    h1 {
-        text-align: center;
-        margin-bottom: 20px;
-        opacity: 0;
-        animation: fadeIn 1.2s ease forwards;
-    }
-
-    .cars {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 15px;
-    }
-
-    .car {
-        background: #1c1c1c;
-        padding: 15px;
-        border-radius: 12px;
-        text-align: center;
+    .menu-item {
+        padding: 15px 25px;
         cursor: pointer;
-        transition: transform 0.4s ease, opacity 0.4s ease, background 0.4s;
+        transition: 0.3s;
+        font-size: 18px;
+    }
+
+    .menu-item:hover {
+        background: #1f1f1f;
+        padding-left: 35px;
+    }
+
+    /* İçerik */
+    .content {
+        margin-left: 260px;
+        padding: 30px;
+        width: calc(100% - 260px);
         opacity: 0;
-        animation: fadeIn 1s ease forwards;
+        transition: opacity 0.3s ease;
     }
 
-    .car:hover {
-        transform: scale(1.05);
-        background: #292929;
+    .show {
+        opacity: 1;
     }
 
-    .car img {
-        width: 100%;
+    .tool-box {
+        background: #1b1b1b;
+        padding: 20px;
         border-radius: 10px;
     }
 
-    /* Araç detay kutusu */
-    .details {
-        background: #1c1c1c;
-        margin-top: 20px;
-        padding: 20px;
-        border-radius: 12px;
-        display: none;
-        animation: fadeIn 0.5s ease forwards;
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to   { opacity: 1; transform: translateY(0); }
+    /* Mobil */
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 180px;
+        }
+        .content {
+            margin-left: 180px;
+            width: calc(100% - 180px);
+        }
+        .menu-item {
+            font-size: 16px;
+        }
     }
 </style>
-
 </head>
+
 <body>
 
-<div class="container">
-    <h1>Araç Galerisi</h1>
-
-    <div class="cars">
-        <div class="car" onclick="showDetails('M3 GTR')">
-            <img src="https://i.imgur.com/vqUQYqf.jpeg">
-            <h3>M3 GTR</h3>
-        </div>
-
-        <div class="car" onclick="showDetails('Nissan GTR R34')">
-            <img src="https://i.imgur.com/EeCmM5F.jpeg">
-            <h3>Nissan GTR R34</h3>
-        </div>
-
-        <div class="car" onclick="showDetails('350Z')">
-            <img src="https://i.imgur.com/TW0za9P.jpeg">
-            <h3>350Z</h3>
-        </div>
-    </div>
-
-    <div id="detailsBox" class="details"></div>
+<!-- Menü -->
+<div class="sidebar">
+    <div class="menu-item" onclick="showTool('calculator')">Hesap Makinesi</div>
+    <div class="menu-item" onclick="showTool('translate')">Çeviri</div>
+    <div class="menu-item" onclick="showTool('homework')">Ödev Özetleyici</div>
+    <div class="menu-item" onclick="showTool('currency')">Para Birimi Dönüştürücü</div>
+    <div class="menu-item" onclick="showTool('password')">Şifre Oluşturucu</div>
+    <div class="menu-item" onclick="showTool('nickname')">Nick Oluşturucu</div>
+    <div class="menu-item" onclick="showTool('clock')">Saat</div>
+    <div class="menu-item" onclick="showTool('chrono')">Kronometre</div>
 </div>
 
+<!-- İçerik Alanı -->
+<div id="content" class="content"></div>
+
+
 <script>
-function showDetails(carName) {
-    const box = document.getElementById("detailsBox");
+function showTool(tool) {
+    const content = document.getElementById("content");
+    content.classList.remove("show");
 
-    let text = "";
+    setTimeout(() => {
+        let html = "";
 
-    if (carName === "M3 GTR") {
-        text = "<h2>M3 GTR</h2><p>Efsane Most Wanted canavarı.</p>";
-    } 
-    else if (carName === "Nissan GTR R34") {
-        text = "<h2>Nissan GTR R34</h2><p>Underground 2’nin ruhu.</p>";
+        if (tool === "calculator") {
+            html = `
+            <div class="tool-box">
+                <h2>Hesap Makinesi</h2>
+                <input id="calcInput" style="width:100%; padding:10px;">
+                <button onclick="calc()" style="margin-top:10px;">Hesapla</button>
+                <p id="calcResult"></p>
+            </div>`;
+        }
+
+        if (tool === "translate") {
+            html = `
+            <div class="tool-box">
+                <h2>Çeviri</h2>
+                <p>Bu kısma çeviri API eklenicek.</p>
+            </div>`;
+        }
+
+        if (tool === "homework") {
+            html = `
+            <div class="tool-box">
+                <h2>Ödev Özetleyici</h2>
+                <textarea style="width:100%;height:120px;"></textarea>
+            </div>`;
+        }
+
+        if (tool === "currency") {
+            html = `
+            <div class="tool-box">
+                <h2>Para Birimi Dönüştürücü</h2>
+                <p>Bu kısma döviz API eklenecek.</p>
+            </div>`;
+        }
+
+        if (tool === "password") {
+            html = `
+            <div class="tool-box">
+                <h2>Şifre Oluşturucu</h2>
+                <button onclick="generatePassword()">Oluştur</button>
+                <p id="passResult"></p>
+            </div>`;
+        }
+
+        if (tool === "nickname") {
+            html = `
+            <div class="tool-box">
+                <h2>Nick Oluşturucu</h2>
+                <button onclick="generateNick()">Nick Oluştur</button>
+                <p id="nickResult"></p>
+            </div>`;
+        }
+
+        if (tool === "clock") {
+            html = `
+            <div class="tool-box">
+                <h2>Saat</h2>
+                <p id="clockTXT"></p>
+            </div>`;
+            setInterval(() => {
+                document.getElementById("clockTXT").innerText = new Date().toLocaleTimeString();
+            }, 1000);
+        }
+
+        if (tool === "chrono") {
+            html = `
+            <div class="tool-box">
+                <h2>Kronometre</h2>
+                <p id="chronoTXT">0</p>
+                <button onclick="startChrono()">Başlat</button>
+                <button onclick="stopChrono()">Dur</button>
+            </div>`;
+        }
+
+        content.innerHTML = html;
+        setTimeout(() => content.classList.add("show"), 80);
+    }, 200);
+}
+
+function calc() {
+    try {
+        document.getElementById("calcResult").innerText =
+            eval(document.getElementById("calcInput").value);
+    } catch {
+        document.getElementById("calcResult").innerText = "Hata!";
     }
-    else if (carName === "350Z") {
-        text = "<h2>350Z</h2><p>Modifiye krallarından biri.</p>";
-    }
+}
 
-    box.style.display = "block";
-    box.innerHTML = text;
+function generatePassword() {
+    let pass = Math.random().toString(36).slice(2, 12);
+    document.getElementById("passResult").innerText = pass;
+}
+
+function generateNick() {
+    let nicks = ["Shadow", "Nova", "Viper", "Rex", "FireStorm"];
+    document.getElementById("nickResult").innerText =
+        nicks[Math.floor(Math.random() * nicks.length)];
+}
+
+let chrono = 0;
+let chronoInterval;
+
+function startChrono() {
+    chronoInterval = setInterval(() => {
+        chrono++;
+        document.getElementById("chronoTXT").innerText = chrono;
+    }, 1000);
+}
+function stopChrono() {
+    clearInterval(chronoInterval);
 }
 </script>
 
